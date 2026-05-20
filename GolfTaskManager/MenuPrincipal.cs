@@ -22,7 +22,9 @@ public class MenuPrincipal
             Console.WriteLine("1. Ajouter une tâche");
             Console.WriteLine("2. Afficher les tâches");
             Console.WriteLine("3. Marquer une tâche comme terminée");
-            Console.WriteLine("4. Quitter");
+            Console.WriteLine("4. Supprimer une tâche");
+            Console.WriteLine("5. Filtrer les tâches par fréquence");
+            Console.WriteLine("6. Quitter");
             Console.Write("Votre choix : ");
 
             string choix = Console.ReadLine();
@@ -39,6 +41,12 @@ public class MenuPrincipal
                     gestionnaire.MarquerTacheTerminee();
                     break;
                 case "4":
+                    gestionnaire.SupprimerTache();
+                    break;
+                case "5":
+                    gestionnaire.FiltrerTachesParFrequence();
+                    break;
+                case "6":
                     quitter = true;
                     break;
                 default:
