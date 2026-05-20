@@ -13,5 +13,5 @@ public class TacheMensuelle : Tache
     }
 
     public override void Executer() { throw new NotImplementedException(); }
-    public override string AfficherFrequence() { throw new NotImplementedException(); return "Mensuelle"; }
+    public override string AfficherFrequence() {  return "Mensuelle"; }
 }

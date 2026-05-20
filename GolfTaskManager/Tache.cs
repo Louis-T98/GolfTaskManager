@@ -22,7 +22,11 @@ public abstract class Tache
     public string Titre { get => titre; }
     public string Description { get => description; }
     public int Priorite { get => priorite; }
-    public string Statut { get => statut; set => statut = value; }
+    public string Statut 
+    { 
+        get { return statut; } 
+        set { statut = value; }
+    }
     public DateTime DatePrevue { get => datePrevue; }
 
     public abstract void Executer();

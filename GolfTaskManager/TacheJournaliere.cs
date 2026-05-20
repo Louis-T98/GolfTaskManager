@@ -19,7 +19,6 @@ public class TacheJournaliere : Tache
 
     public override string AfficherFrequence()
     {
-        throw new NotImplementedException();
         return "Journalière";
     }
 }

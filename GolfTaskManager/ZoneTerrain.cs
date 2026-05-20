@@ -8,6 +8,11 @@ public class ZoneTerrain
     private string typeZone;
     private double superficie;
 
+    public string Nom { get
+        {
+            return nom;
+        } }
+
     public ZoneTerrain(string nom, string typeZone, double superficie)
     {
         this.nom = nom;

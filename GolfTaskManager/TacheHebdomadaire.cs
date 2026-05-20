@@ -19,7 +19,6 @@ public class TacheHebdomadaire : Tache
 
     public override string AfficherFrequence()
     {
-        throw new NotImplementedException();
         return "Hebdomadaire";
     }
 }

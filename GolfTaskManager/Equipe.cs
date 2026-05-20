@@ -7,6 +7,11 @@ public class Equipe
     private string nom;
     private List<Ouvrier> listeOuvriers = new List<Ouvrier>();
 
+     public string Nom { get
+        {
+            return nom;
+        } }
+
     public Equipe(string nom)
     {
         this.nom = nom;
