@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Spectre.Console;
 
 namespace GolfTaskManager;
 
@@ -37,14 +38,29 @@ public class GestionnaireTaches
     {
         if (taches.Count == 0)
         {
-            Console.WriteLine("Aucune tâche.");
+            AnsiConsole.MarkupLine("[red]Aucune tâche.[/]");
             return;
         }
 
+        var table = new Table().RoundedBorder().BorderColor(Color.Green);
+        table.AddColumn("[yellow]Titre[/]");
+        table.AddColumn("[yellow]Description[/]");
+        table.AddColumn("[yellow]Priorité[/]");
+        table.AddColumn("[yellow]Fréquence[/]");
+        table.AddColumn("[yellow]Statut[/]");
+
         foreach (Tache t in taches)
         {
-            Console.WriteLine($"{t.Titre} - {t.Description} - {t.Priorite} - {t.AfficherFrequence()} - {t.Statut}");
+            table.AddRow(
+                t.Titre,
+                t.Description,
+                t.Priorite.ToString(),
+                t.AfficherFrequence(),
+                t.Statut
+            );
         }
+
+        AnsiConsole.Write(table);
     }
 
     

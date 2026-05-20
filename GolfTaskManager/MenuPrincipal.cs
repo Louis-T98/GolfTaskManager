@@ -1,4 +1,5 @@
 using System;
+using Spectre.Console;
 
 namespace GolfTaskManager;
 
@@ -18,6 +19,10 @@ public class MenuPrincipal
         while (!quitter)
         {
             Console.Clear();
+
+            AnsiConsole.MarkupLine("[green bold]=== GolfTaskManager ===[/]");
+            AnsiConsole.WriteLine();
+            
             Console.WriteLine("=== GolfTaskManager ===");
             Console.WriteLine("1. Ajouter une tâche");
             Console.WriteLine("2. Afficher les tâches");
