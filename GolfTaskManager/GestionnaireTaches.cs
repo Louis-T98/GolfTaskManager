@@ -126,55 +126,48 @@ public class GestionnaireTaches
     {
         if (taches.Count == 0)
         {
-            Console.WriteLine("Aucune tâche à filtrer.");
+            AnsiConsole.MarkupLine("[red]Aucune tâche à filtrer.[/]");
             return;
         }
 
-        Console.WriteLine("Choisis une fréquence :");
-        Console.WriteLine("1. Journalière");
-        Console.WriteLine("2. Hebdomadaire");
-        Console.WriteLine("3. Mensuelle");
-        Console.WriteLine("4. Annuelle");
-        Console.Write("Votre choix : ");
+        var frequence = AnsiConsole.Prompt(
+            new SelectionPrompt<string>()
+                .Title("Choisis une [green]fréquence[/] :")
+                .AddChoices("Journalière", "Hebdomadaire", "Mensuelle", "Annuelle")
+        );
 
-        string choix = Console.ReadLine();
-        string frequenceRecherchee = "";
-
-        switch (choix)
-        {
-            case "1":
-                frequenceRecherchee = "Journalière";
-                break;
-            case "2":
-                frequenceRecherchee = "Hebdomadaire";
-                break;
-            case "3":
-                frequenceRecherchee = "Mensuelle";
-                break;
-            case "4":
-                frequenceRecherchee = "Annuelle";
-                break;
-            default:
-                Console.WriteLine("Choix invalide.");
-                return;
-        }
-
-        var tachesFiltrees = taches.Where(t => t.AfficherFrequence() == frequenceRecherchee).ToList();
+        var tachesFiltrees = taches
+            .Where(t => t.AfficherFrequence() == frequence)
+            .ToList();
 
         if (tachesFiltrees.Count == 0)
         {
-            Console.WriteLine("Aucune tâche trouvée pour cette fréquence.");
+            AnsiConsole.MarkupLine($"[yellow]Aucune tâche trouvée pour la fréquence {frequence}.[/]");
             return;
         }
 
-        Console.WriteLine($"Tâches {frequenceRecherchee} :");
+        AnsiConsole.MarkupLine($"[bold green]Tâches {frequence}[/]");
+        var table = new Table().RoundedBorder().BorderColor(Color.Green);
+
+        table.AddColumn("[yellow]Titre[/]");
+        table.AddColumn("[yellow]Description[/]");
+        table.AddColumn("[yellow]Priorité[/]");
+        table.AddColumn("[yellow]Statut[/]");
+
         foreach (Tache t in tachesFiltrees)
         {
-            Console.WriteLine("-------------------");
-            Console.WriteLine($"Titre      : {t.Titre}");
-            Console.WriteLine($"Description: {t.Description}");
-            Console.WriteLine($"Priorité   : {t.Priorite}");
-            Console.WriteLine($"Statut     : {t.Statut}");
+            string statutCouleur = t.Statut == "Terminée"
+                ? "[green]Terminée[/]"
+                : "[orange1]En attente[/]";
+
+            table.AddRow(
+                t.Titre,
+                t.Description,
+                t.Priorite.ToString(),
+                statutCouleur
+            );
         }
+
+        AnsiConsole.Write(table);
     }
 }
