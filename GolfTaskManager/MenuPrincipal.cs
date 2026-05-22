@@ -7,6 +7,8 @@ public class MenuPrincipal
 {
     private GestionnaireTaches gestionnaire;
 
+    private ChefEquipe chefEquipe;
+
     public MenuPrincipal()
     {
         gestionnaire = new GestionnaireTaches();
@@ -22,14 +24,16 @@ public class MenuPrincipal
 
             AnsiConsole.MarkupLine("[green bold]=== GolfTaskManager ===[/]");
             AnsiConsole.WriteLine();
-            
+
             Console.WriteLine("=== GolfTaskManager ===");
             Console.WriteLine("1. Ajouter une tâche");
             Console.WriteLine("2. Afficher les tâches");
             Console.WriteLine("3. Marquer une tâche comme terminée");
             Console.WriteLine("4. Supprimer une tâche");
             Console.WriteLine("5. Filtrer les tâches par fréquence");
-            Console.WriteLine("6. Quitter");
+            Console.WriteLine("6. Attribuer une tache");
+            Console.WriteLine("7. Les taches d'un ouvrier");
+            Console.WriteLine("8. Quitter");
             Console.Write("Votre choix : ");
 
             string choix = Console.ReadLine();
@@ -52,6 +56,12 @@ public class MenuPrincipal
                     gestionnaire.FiltrerTachesParFrequence();
                     break;
                 case "6":
+                    gestionnaire.AttribuerTache();
+                    break;
+                case "7":
+                    gestionnaire.AfficherTachesDunOuvrier();
+                    break;
+                case "8":
                     quitter = true;
                     break;
                 default:

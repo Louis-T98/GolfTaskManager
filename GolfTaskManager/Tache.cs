@@ -27,6 +27,13 @@ public abstract class Tache
         get { return statut; } 
         set { statut = value; }
     }
+
+    public Ouvrier AssigneA { get; set; }
+    
+    public ZoneTerrain Zone { get; set; }
+
+    public string HeurePrevue { get; set; }
+
     public DateTime DatePrevue { get => datePrevue; }
 
     public abstract void Executer();

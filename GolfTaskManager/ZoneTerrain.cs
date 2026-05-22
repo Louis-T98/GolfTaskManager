@@ -12,7 +12,6 @@ public class ZoneTerrain
         {
             return nom;
         } }
-
     public ZoneTerrain(string nom, string typeZone, double superficie)
     {
         this.nom = nom;
