@@ -14,7 +14,7 @@ public class TacheJournaliere : Tache
 
     public override void Executer()
     {
-        throw new NotImplementedException();
+        MarquerCommeFaite();
     }
 
     public override string AfficherFrequence()

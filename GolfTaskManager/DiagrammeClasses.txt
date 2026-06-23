@@ -1,47 +1,58 @@
-                              ┌─────────────────┐
-                              │     Tache       │  ← Classe abstraite
-├──────────────────────────────┼─────────────────┤
-│ - titre: string             │ + Executer():void│
-│ - description: string       │ + AfficherFrequence():string
-│ - priorite: int             │ + MarquerCommeFaite():void
-│ - statut: string            │
-│ - datePrevue: DateTime      │
-└──────────────┬──────────────┘
-               │
-    ┌──────────▼──────────┐  ┌──────────▼──────────┐
-    │ TacheJournaliere    │  │ TacheHebdomadaire   │
-    ├─────────────────────┤  ├─────────────────────┤
-    │ - date: DateTime    │  │ - jourSemaine: int │
-    └─────────────────────┘  └─────────────────────┘
-    ┌──────────▼──────────┐  ┌──────────▼──────────┐
-    │ TacheMensuelle      │  │ TacheAnnuelle       │
-    ├─────────────────────┤  ├─────────────────────┤
-    │ - mois: int         │  │ - periode: string   │
-    └─────────────────────┘  └─────────────────────┘
 
-┌─────────────────┐          *◄──────┐
-│   Equipe        │◄──────┐  │       │
-├─────────────────┤       │  │       │Ouvrier
-│ - nom: string   │       │  │       │┌─────────────────┐
-│ - listeOuvriers │       │  │       ││   Ouvrier       │
-└─────────────────┘       │  │       │├─────────────────┤
-         │                │  │       ││ - nom: string   │
-         │                │  │       ││ - prenom: string│
-         ▼                ▼  ▼       ││ - role: string  │
-┌─────────────────┐  ┌───────────────┐││ + travailler()  │
-│  Planning       │  │  ChefEquipe   │││ + terminerTache│
-├─────────────────┤  ├───────────────┤└─────────────────┘
-│ - dateDebut     │  │ - nom: string │
-│ - dateFin       │  │ - niveauAcces │
-│ - listeTaches * │  │ + assignerTache()│
-└─────────────────┘  └───────────────┘
-         │
-         ▼
-┌─────────────────┐
-│  ZoneTerrain    │
-├─────────────────┤
-│ - nom: string   │
-│ - typeZone: string│
-│ - superficie: double│
-│ + affecterTache()
-└─────────────────┘
+┌──────────────────────────────────────────┐
+       │                  Tache                   │ ← abstraite
+       ├──────────────────────────────────────────┤
+       │ - titre: string                          │
+       │ - description: string                    │
+       │ - priorite: int                          │       ┌───────────────┐
+       │ - statut: string                         │       │  ZoneTerrain  │
+       │ - datePrevue: DateTime                   │       ├───────────────┤
+       │ + AssigneA: Ouvrier?   ──────────────────┼─────> │ - nom: string │
+       │ + Zone: ZoneTerrain?   ──────────────────┼─────> │ - type: string│
+       ├──────────────────────────────────────────┤       │ - superf: dbl │
+       │ + Executer(): void       {abstract}      │       └───────────────┘
+       │ + AfficherFrequence(): string {abstract} │
+       └────────────────────┬─────────────────────┘
+                            ▲
+ ┌──────────────────┬───────┴──────────┬──────────────────┐
+ │                  │                  │                  │
+┌┴─────────────────┐┌┴────────────────┐┌┴────────────────┐┌┴────────────────┐
+│ TacheJournaliere ││TacheHebdomadaire││ TacheMensuelle  ││  TacheAnnuelle  │
+├──────────────────┤├─────────────────┤├─────────────────┤├─────────────────┤
+│ - date: DateTime ││- jourSemaine:int││ - mois: int     ││- periode:string │
+├──────────────────┤├─────────────────┤├─────────────────┤├─────────────────┤
+│ + Executer()     ││ + Executer()    ││ + Executer()    ││ + Executer()    │
+│ + AfficherFreq() ││ + AfficherFreq()││ + AfficherFreq()││ + AfficherFreq()│
+└──────────────────┘└─────────────────┘└─────────────────┘└─────────────────┘
+
+       ┌──────────────────────────┐               ┌──────────────────────────┐
+       │         Ouvrier          │ <──────────── │          Equipe          │
+       ├──────────────────────────┤               ├──────────────────────────┤
+       │ - nom: string            │               │ - nom: string            │
+       │ - prenom: string         │               │ - listeOuvriers: List    │
+       │ - role: string           │               └──────────────────────────┘
+       ├──────────────────────────┤
+       │ + Travailler(): void     │               ┌──────────────────────────┐
+       │ + TerminerTache(): void  │               │         Planning         │
+       └────────────▲─────────────┘               ├──────────────────────────┤
+                    │                             │ - dateDebut: DateTime    │
+       ┌────────────┴─────────────┐               │ - dateFin: DateTime      │
+       │       ChefEquipe         │               │ - listeTaches: List   ───┼─┐
+       ├──────────────────────────┤               └──────────────────────────┘ │
+       │ - niveauAcces: string    │                                            │
+       ├──────────────────────────┤                                            │
+       │ + AssignerTache()        │ <──────────────────────────────────────────┘
+       │ + ValiderTravail()       │
+       └──────────────────────────┘
+
+ ┌──────────────────────────────────────────────────────────────────────────┐
+ │                            GestionnaireTaches                            │
+ ├──────────────────────────────────────────────────────────────────────────┤
+ │ - _taches: List<Tache>                                                   │
+ │ - _ouvriers: List<Ouvrier>                                               │
+ │ - _zones: List<ZoneTerrain>                                              │
+ ├──────────────────────────────────────────────────────────────────────────┤
+ │ + CreerEtAjouterTache(type: string, titre: string, ...) void             │
+ │ + ObtenirTachesEnCours(): List<Tache>                                    │
+ │ + AfficherTaches(): void                                                 │
+ └──────────────────────────────────────────────────────────────────────────┘

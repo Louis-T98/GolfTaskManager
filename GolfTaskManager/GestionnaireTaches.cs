@@ -7,24 +7,26 @@ namespace GolfTaskManager;
 
 public class GestionnaireTaches
 {
-    private List<Tache> taches;
-    
-    private List<Ouvrier> ouvriers;
+    private readonly List<Tache> _taches;
+    private readonly List<Ouvrier> _ouvriers;
+    private readonly List<ZoneTerrain> _zones;
 
-    private List<ZoneTerrain> zones;
+    // Encapsulation propre pour que le menu puisse lire les choix possibles sans modifier les listes
+    public List<Ouvrier> Ouvriers => _ouvriers;
+    public List<ZoneTerrain> Zones => _zones;
 
     public GestionnaireTaches()
     {
-        taches = new List<Tache>();
+        _taches = new List<Tache>();
 
-        ouvriers = new List<Ouvrier>
+        _ouvriers = new List<Ouvrier>
         {
             new Ouvrier("Bob", "Bob", "Ouvrier"),
             new Ouvrier("John", "John", "Ouvrier"),
             new Ouvrier("Michel", "Michel", "Ouvrier")
         };
 
-        zones = new List<ZoneTerrain>
+        _zones = new List<ZoneTerrain>
         {
             new ZoneTerrain("Parc", "Zone verte", 1.0),
             new ZoneTerrain("Grand Terrain", "Terrain principal", 5.0),
@@ -33,31 +35,22 @@ public class GestionnaireTaches
         };
     }
 
-    public void AjouterTache()
+    public void CreerEtAjouterTache(string type, string titre, string description, int priorite)
     {
-        Console.WriteLine("Nom de la tâche : ");
-        string titre = Console.ReadLine();
-
-        Console.WriteLine("Description : ");
-        string description = Console.ReadLine();
-
-        Console.WriteLine("Priorité : ");
-        int priorite = int.Parse(Console.ReadLine());
-
-        Console.WriteLine("Type de tâche (1=jour, 2=semaine, 3=mois, 4=année) : ");
-        string type = Console.ReadLine();
-
         Tache nouvelleTache = TacheFactory.CreerTache(type, titre, description, priorite);
-        taches.Add(nouvelleTache);
-
-        Console.WriteLine("Tâche ajoutée.");
+        _taches.Add(nouvelleTache);
     }
+
+    public List<Tache> ObtenirTachesEnCours() => _taches.Where(t => t.Statut != "Terminée").ToList();
+    public List<Tache> ObtenirToutesLesTaches() => _taches;
+
+    public void SupprimerTache(Tache tache) => _taches.Remove(tache);
 
     public void AfficherTaches()
     {
-        if (taches.Count == 0)
+        if (_taches.Count == 0)
         {
-            AnsiConsole.MarkupLine("[red]Aucune tâche.[/]");
+            AnsiConsole.MarkupLine("[yellow]Aucune tâche enregistrée.[/]");
             return;
         }
 
@@ -70,101 +63,21 @@ public class GestionnaireTaches
         table.AddColumn("[yellow]Attribuée à[/]");
         table.AddColumn("[yellow]Zone[/]");
 
-        foreach (Tache t in taches)
+        foreach (Tache t in _taches)
         {
             string ouvrier = t.AssigneA != null ? t.AssigneA.Prenom : "[grey]Non attribuée[/]";
             string zone = t.Zone != null ? t.Zone.Nom : "[grey]Non attribuée[/]";
+            string statutCouleur = t.Statut == "Terminée" ? "[green]Terminée[/]" : "[orange1]En attente[/]";
 
-            table.AddRow(
-                t.Titre,
-                t.Description,
-                t.Priorite.ToString(),
-                t.AfficherFrequence(),
-                t.Statut,
-                ouvrier,
-                zone
-            );
+            table.AddRow(t.Titre, t.Description, t.Priorite.ToString(), t.AfficherFrequence(), statutCouleur, ouvrier, zone);
         }
 
         AnsiConsole.Write(table);
     }
 
-    
-    public void MarquerTacheTerminee()
+    public void AfficherTachesFiltrees(string frequence)
     {
-        if (taches.Count == 0)
-        {
-            Console.WriteLine("Aucune tâche à modifier.");
-            return;
-        }
-
-        Console.WriteLine("Liste des tâches :");
-        for (int i = 0; i < taches.Count; i++)
-        {
-            Console.WriteLine($"{i + 1}. {taches[i].Titre} - {taches[i].Statut}");
-        }
-
-        Console.Write("Choisis le numéro de la tâche à terminer : ");
-        string saisie = Console.ReadLine();
-
-        if (int.TryParse(saisie, out int numero) && numero >= 1 && numero <= taches.Count)
-        {
-            Tache tacheChoisie = taches[numero - 1];
-            tacheChoisie.Statut = "Terminée";
-            Console.WriteLine($"La tâche '{tacheChoisie.Titre}' est maintenant terminée.");
-        }
-        else
-        {
-            Console.WriteLine("Numéro invalide.");
-        }
-    }
-
-    public void SupprimerTache()
-    {
-        if (taches.Count == 0)
-        {
-            Console.WriteLine("Aucune tâche à supprimer.");
-            return;
-        }
-
-        Console.WriteLine("Liste des tâches :");
-        for (int i = 0; i < taches.Count; i++)
-        {
-            Console.WriteLine($"{i + 1}. {taches[i].Titre} - {taches[i].Statut}");
-        }
-
-        Console.Write("Choisis le numéro de la tâche à supprimer : ");
-        string saisie = Console.ReadLine();
-
-        if (int.TryParse(saisie, out int numero) && numero >= 1 && numero <= taches.Count)
-        {
-            Tache tacheASupprimer = taches[numero - 1];
-            taches.RemoveAt(numero - 1);
-            Console.WriteLine($"La tâche '{tacheASupprimer.Titre}' a été supprimée.");
-        }
-        else
-        {
-            Console.WriteLine("Numéro invalide.");
-        }
-    }
-
-    public void FiltrerTachesParFrequence()
-    {
-        if (taches.Count == 0)
-        {
-            AnsiConsole.MarkupLine("[red]Aucune tâche à filtrer.[/]");
-            return;
-        }
-
-        var frequence = AnsiConsole.Prompt(
-            new SelectionPrompt<string>()
-                .Title("Choisis une [green]fréquence[/] :")
-                .AddChoices("Journalière", "Hebdomadaire", "Mensuelle", "Annuelle")
-        );
-
-        var tachesFiltrees = taches
-            .Where(t => t.AfficherFrequence() == frequence)
-            .ToList();
+        var tachesFiltrees = _taches.Where(t => t.AfficherFrequence() == frequence).ToList();
 
         if (tachesFiltrees.Count == 0)
         {
@@ -174,7 +87,6 @@ public class GestionnaireTaches
 
         AnsiConsole.MarkupLine($"[bold green]Tâches {frequence}[/]");
         var table = new Table().RoundedBorder().BorderColor(Color.Green);
-
         table.AddColumn("[yellow]Titre[/]");
         table.AddColumn("[yellow]Description[/]");
         table.AddColumn("[yellow]Priorité[/]");
@@ -182,146 +94,34 @@ public class GestionnaireTaches
 
         foreach (Tache t in tachesFiltrees)
         {
-            string statutCouleur = t.Statut == "Terminée"
-                ? "[green]Terminée[/]"
-                : "[orange1]En attente[/]";
-
-            table.AddRow(
-                t.Titre,
-                t.Description,
-                t.Priorite.ToString(),
-                statutCouleur
-            );
+            string statutCouleur = t.Statut == "Terminée" ? "[green]Terminée[/]" : "[orange1]En attente[/]";
+            table.AddRow(t.Titre, t.Description, t.Priorite.ToString(), statutCouleur);
         }
 
         AnsiConsole.Write(table);
     }
 
-    public void AttribuerTache()
+    public void AfficherTachesParFrequence()
     {
-        if (taches.Count == 0)
+        if (_taches.Count == 0)
         {
-            AnsiConsole.MarkupLine("[red]Aucune tâche disponible.[/]");
+            AnsiConsole.MarkupLine("[red]Aucune tâche enregistrée.[/]");
             return;
         }
 
-        var tableTaches = new Table().RoundedBorder();
-        tableTaches.AddColumn("Numéro");
-        tableTaches.AddColumn("Titre");
+        string[] ordre = { "Journalière", "Hebdomadaire", "Mensuelle", "Annuelle" };
 
-        for (int i = 0; i < taches.Count; i++)
+        foreach (string frequence in ordre)
         {
-            tableTaches.AddRow((i + 1).ToString(), taches[i].Titre);
+            var tachesFrequence = _taches.Where(t => t.AfficherFrequence() == frequence).ToList();
+            if (tachesFrequence.Count == 0) continue;
+
+            AnsiConsole.MarkupLine($"[bold blue]===== TACHES {frequence.ToUpper()} =====[/]");
+            foreach (var tache in tachesFrequence)
+            {
+                AnsiConsole.MarkupLine($"- {tache.Titre} ([grey]{tache.Statut}[/])");
+            }
+            AnsiConsole.WriteLine();
         }
-
-        AnsiConsole.Write(tableTaches);
-
-        int indexTache = AnsiConsole.Ask<int>("Choisis le [green]numéro de la tâche[/] :") - 1;
-
-        if (indexTache < 0 || indexTache >= taches.Count)
-        {
-            AnsiConsole.MarkupLine("[red]Numéro de tâche invalide.[/]");
-            return;
-        }
-
-        var tableOuvriers = new Table().RoundedBorder();
-        tableOuvriers.AddColumn("Numéro");
-        tableOuvriers.AddColumn("Ouvrier");
-
-        for (int i = 0; i < ouvriers.Count; i++)
-        {
-            tableOuvriers.AddRow((i + 1).ToString(), ouvriers[i].Prenom);
-        }
-
-        AnsiConsole.Write(tableOuvriers);
-
-        int indexOuvrier = AnsiConsole.Ask<int>("Choisis le [green]numéro de l'ouvrier[/] :") - 1;
-
-        if (indexOuvrier < 0 || indexOuvrier >= ouvriers.Count)
-        {
-            AnsiConsole.MarkupLine("[red]Numéro d'ouvrier invalide.[/]");
-            return;
-        }
-
-        var tableZones = new Table().RoundedBorder();
-        tableZones.AddColumn("Numéro");
-        tableZones.AddColumn("Zone");
-
-        for (int i = 0; i < zones.Count; i++)
-        {
-            tableZones.AddRow((i + 1).ToString(), zones[i].Nom);
-        }
-
-        AnsiConsole.Write(tableZones);
-
-        int indexZone = AnsiConsole.Ask<int>("Choisis le [green]numéro de la zone[/] :") - 1;
-
-        if (indexZone < 0 || indexZone >= zones.Count)
-        {
-            AnsiConsole.MarkupLine("[red]Numéro de zone invalide.[/]");
-            return;
-        }
-
-        taches[indexTache].AssigneA = ouvriers[indexOuvrier];
-        taches[indexTache].Zone = zones[indexZone];
-
-        string heure = AnsiConsole.Ask<string>("À quelle [green]heure[/] la tâche doit-elle être faite ? (ex: 09:00)");
-        taches[indexTache].HeurePrevue = heure;
-
-        AnsiConsole.MarkupLine($"[green]La tâche '{taches[indexTache].Titre}' a été attribuée à {ouvriers[indexOuvrier].Prenom} dans la zone {zones[indexZone].Nom}.[/]");
-    }
-    public void AfficherTachesDunOuvrier()
-    {
-        if (ouvriers.Count == 0)
-        {
-            AnsiConsole.MarkupLine("[red]Aucun ouvrier disponible.[/]");
-            return;
-        }
-
-        var ouvrierChoisi = AnsiConsole.Prompt(
-            new SelectionPrompt<Ouvrier>()
-                .Title("Choisis un [green]ouvrier[/] :")
-                .UseConverter(o => o.Prenom)
-                .AddChoices(ouvriers)
-        );
-
-        var tachesOuvrier = taches
-            .Where(t => t.AssigneA == ouvrierChoisi)
-            .ToList();
-
-        if (tachesOuvrier.Count == 0)
-        {
-            AnsiConsole.MarkupLine($"[yellow]Aucune tâche attribuée à {ouvrierChoisi.Prenom}.[/]");
-            return;
-        }
-
-        AnsiConsole.MarkupLine($"[bold green]Tâches de {ouvrierChoisi.Prenom}[/]");
-
-        var table = new Table().RoundedBorder().BorderColor(Color.Green);
-        table.AddColumn("[yellow]Titre[/]");
-        table.AddColumn("[yellow]Description[/]");
-        table.AddColumn("[yellow]Priorité[/]");
-        table.AddColumn("[yellow]Fréquence[/]");
-        table.AddColumn("[yellow]Statut[/]");
-        table.AddColumn("[yellow]Zone[/]");
-        table.AddColumn("[yellow]Heure[/]");
-
-        foreach (Tache t in tachesOuvrier)
-        {
-            string zone = t.Zone != null ? t.Zone.Nom : "[grey]Non attribuée[/]";
-            string heure = string.IsNullOrWhiteSpace(t.HeurePrevue) ? "[grey]Non définie[/]" : t.HeurePrevue;
-
-            table.AddRow(
-                t.Titre,
-                t.Description,
-                t.Priorite.ToString(),
-                t.AfficherFrequence(),
-                t.Statut, 
-                zone,
-                heure
-            );
-        }
-
-        AnsiConsole.Write(table);
     }
 }

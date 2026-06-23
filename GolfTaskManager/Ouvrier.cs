@@ -19,6 +19,6 @@ public class Ouvrier
     public string Prenom { get => prenom; }
     public string Role { get => role; }
 
-    public void Travailler() { throw new NotImplementedException(); }
-    public void TerminerTache() { throw new NotImplementedException(); }
+    public void Travailler() { Console.WriteLine($"{prenom} est en train de travailler."); }
+    public void TerminerTache() { Console.WriteLine($"{prenom} a terminé sa tâche."); }
 }

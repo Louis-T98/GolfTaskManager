@@ -12,6 +12,6 @@ public class TacheMensuelle : Tache
         this.mois = mois;
     }
 
-    public override void Executer() { throw new NotImplementedException(); }
+    public override void Executer() { MarquerCommeFaite(); }
     public override string AfficherFrequence() {  return "Mensuelle"; }
 }

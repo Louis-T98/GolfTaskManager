@@ -35,7 +35,7 @@ public class ChefEquipe : Ouvrier
 
         foreach (var t in tachesAttribuees)
         {
-            string ouvrier = t.AssigneA != null ? t.AssigneA.Prenom : "Non attribué";
+            string ouvrier = t.AssigneA.Prenom;
             string zone = t.Zone != null ? t.Zone.Nom : "Non attribuée";
             string heure = string.IsNullOrWhiteSpace(t.HeurePrevue) ? "Non définie" : t.HeurePrevue;
 

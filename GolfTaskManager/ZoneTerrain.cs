@@ -8,10 +8,21 @@ public class ZoneTerrain
     private string typeZone;
     private double superficie;
 
-    public string Nom { get
-        {
-            return nom;
-        } }
+    public string Nom 
+    { 
+        get { return nom; } 
+    }
+
+    public string TypeZone
+    {
+        get { return typeZone; }
+    }
+
+    public double Superficie
+    {
+        get { return superficie; }
+    }
+
     public ZoneTerrain(string nom, string typeZone, double superficie)
     {
         this.nom = nom;
@@ -19,5 +30,5 @@ public class ZoneTerrain
         this.superficie = superficie;
     }
 
-    public void AffecterTache() { throw new NotImplementedException(); }
+    public void AffecterTache() { Console.WriteLine($"La tâche a été affectée à la zone {nom}."); }
 }

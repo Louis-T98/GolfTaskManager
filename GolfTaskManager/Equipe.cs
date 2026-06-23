@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 
 namespace GolfTaskManager;
 
@@ -17,6 +18,19 @@ public class Equipe
         this.nom = nom;
     }
 
-    public void AjouterOuvrier(Ouvrier ouvrier) { throw new NotImplementedException(); }
-    public void RetirerOuvrier(Ouvrier ouvrier) { throw new NotImplementedException(); }
+    public void AjouterOuvrier(Ouvrier ouvrier)
+    {
+        if (ouvrier != null && !listeOuvriers.Contains(ouvrier))
+        {
+            listeOuvriers.Add(ouvrier);
+            Console.WriteLine($"{ouvrier.Prenom} a été ajouté à l'équipe {nom}.");
+        }
+    }
+    public void RetirerOuvrier(Ouvrier ouvrier)
+    {
+        if (ouvrier != null && listeOuvriers.Remove(ouvrier))
+        {
+            Console.WriteLine($"{ouvrier.Prenom} a été retiré de l'équipe {nom}.");
+        }
+    }
 }

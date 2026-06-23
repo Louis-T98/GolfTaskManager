@@ -1,17 +1,19 @@
 using System;
+using System.Linq;
 using Spectre.Console;
 
 namespace GolfTaskManager;
 
 public class MenuPrincipal
 {
-    private GestionnaireTaches gestionnaire;
-
-    private ChefEquipe chefEquipe;
+    private readonly GestionnaireTaches _gestionnaire;
+    private readonly ChefEquipe _chefParDefaut;
 
     public MenuPrincipal()
     {
-        gestionnaire = new GestionnaireTaches();
+        _gestionnaire = new GestionnaireTaches();
+        // On crée un chef d'équipe par défaut pour l'utiliser dans l'application
+        _chefParDefaut = new ChefEquipe("Dupont", "Jean", "Admin");
     }
 
     public void Afficher()
@@ -21,59 +23,167 @@ public class MenuPrincipal
         while (!quitter)
         {
             Console.Clear();
-
-            AnsiConsole.MarkupLine("[green bold]=== GolfTaskManager ===[/]");
+            AnsiConsole.Write(new Rule("[green bold]=== GolfTaskManager ===[/]") { Justification = Justify.Left });
             AnsiConsole.WriteLine();
 
-            Console.WriteLine("=== GolfTaskManager ===");
-            Console.WriteLine("1. Ajouter une tâche");
-            Console.WriteLine("2. Afficher les tâches");
-            Console.WriteLine("3. Marquer une tâche comme terminée");
-            Console.WriteLine("4. Supprimer une tâche");
-            Console.WriteLine("5. Filtrer les tâches par fréquence");
-            Console.WriteLine("6. Attribuer une tache");
-            Console.WriteLine("7. Les taches d'un ouvrier");
-            Console.WriteLine("8. Quitter");
-            Console.Write("Votre choix : ");
-
-            string choix = Console.ReadLine();
+            // Menu interactif Spectre.Console avec flèches du clavier : aucun risque de mauvaise saisie
+            var choix = AnsiConsole.Prompt(
+                new SelectionPrompt<string>()
+                    .Title("Sélectionnez une action :")
+                    .PageSize(10)
+                    .AddChoices(new[] {
+                        "1. Ajouter une tâche",
+                        "2. Afficher toutes les tâches",
+                        "3. Marquer une tâche comme terminée",
+                        "4. Supprimer une tâche",
+                        "5. Filtrer les tâches par fréquence",
+                        "6. Attribuer une tâche (via le Chef d'équipe)",
+                        "7. Voir le planning d'un ouvrier",
+                        "8. Afficher le récapitulatif par fréquence",
+                        "9. Quitter"
+                    }));
 
             switch (choix)
             {
-                case "1":
-                    gestionnaire.AjouterTache();
+                case string s when s.StartsWith("1"):
+                    SaisieAjouterTache();
                     break;
-                case "2":
-                    gestionnaire.AfficherTaches();
+                case string s when s.StartsWith("2"):
+                    _gestionnaire.AfficherTaches();
                     break;
-                case "3":
-                    gestionnaire.MarquerTacheTerminee();
+                case string s when s.StartsWith("3"):
+                    SaisieMarquerTerminee();
                     break;
-                case "4":
-                    gestionnaire.SupprimerTache();
+                case string s when s.StartsWith("4"):
+                    SaisieSupprimerTache();
                     break;
-                case "5":
-                    gestionnaire.FiltrerTachesParFrequence();
+                case string s when s.StartsWith("5"):
+                    SaisieFiltrerFrequence();
                     break;
-                case "6":
-                    gestionnaire.AttribuerTache();
+                case string s when s.StartsWith("6"):
+                    SaisieAttribuerTache();
                     break;
-                case "7":
-                    gestionnaire.AfficherTachesDunOuvrier();
+                case string s when s.StartsWith("7"):
+                    SaisiePlanningOuvrier();
                     break;
-                case "8":
+                case string s when s.StartsWith("8"):
+                    _gestionnaire.AfficherTachesParFrequence();
+                    break;
+                case string s when s.StartsWith("9"):
                     quitter = true;
-                    break;
-                default:
-                    Console.WriteLine("Choix invalide.");
                     break;
             }
 
             if (!quitter)
             {
-                Console.WriteLine("Appuie sur une touche pour continuer...");
-                Console.ReadKey();
+                AnsiConsole.WriteLine();
+                AnsiConsole.MarkupLine("[grey]Appuyez sur une touche pour continuer...[/]");
+                Console.ReadKey(true);
             }
         }
+    }
+
+    private void SaisieAjouterTache()
+    {
+        AnsiConsole.MarkupLine("[bold green]=== Ajouter une nouvelle tâche ===[/]");
+        string titre = AnsiConsole.Ask<string>("Nom de la tâche : ");
+        string description = AnsiConsole.Ask<string>("Description : ");
+        int priorite = AnsiConsole.Ask<int>("Priorité (Nombre entier) : ");
+
+        string typeSaisie = AnsiConsole.Prompt(
+            new SelectionPrompt<string>()
+                .Title("Fréquence de la tâche :")
+                .AddChoices("1 (Jour)", "2 (Semaine)", "3 (Mois)", "4 (Année)")
+        ).Substring(0, 1);
+
+        _gestionnaire.CreerEtAjouterTache(typeSaisie, titre, description, priorite);
+        AnsiConsole.MarkupLine("[green]✓ Tâche ajoutée avec succès.[/]");
+    }
+
+    private void SaisieMarquerTerminee()
+    {
+        var enCours = _gestionnaire.ObtenirTachesEnCours();
+        if (!enCours.Any())
+        {
+            AnsiConsole.MarkupLine("[yellow]Aucune tâche en cours à terminer.[/]");
+            return;
+        }
+
+        var tacheChoisie = AnsiConsole.Prompt(
+            new SelectionPrompt<Tache>()
+                .Title("Sélectionnez la tâche à [green]terminer[/] :")
+                .UseConverter(t => $"{t.Titre} (Priorité: {t.Priorite})")
+                .AddChoices(enCours)
+        );
+
+        // On utilise la méthode de ChefEquipe pour valider l'action métier !
+        _chefParDefaut.ValiderTravail(tacheChoisie);
+        AnsiConsole.MarkupLine($"[green]✓ La tâche '{tacheChoisie.Titre}' est validée comme terminée par le chef d'équipe.[/]");
+    }
+
+    private void SaisieSupprimerTache()
+    {
+        var toutes = _gestionnaire.ObtenirToutesLesTaches();
+        if (!toutes.Any())
+        {
+            AnsiConsole.MarkupLine("[yellow]Aucune tâche à supprimer.[/]");
+            return;
+        }
+
+        var tacheChoisie = AnsiConsole.Prompt(
+            new SelectionPrompt<Tache>()
+                .Title("[red]Sélectionnez la tâche à supprimer :[/]")
+                .UseConverter(t => $"{t.Titre} [{t.Statut}]")
+                .AddChoices(toutes)
+        );
+
+        _gestionnaire.SupprimerTache(tacheChoisie);
+        AnsiConsole.MarkupLine($"[red]✓ La tâche '{tacheChoisie.Titre}' a été supprimée.[/]");
+    }
+
+    private void SaisieFiltrerFrequence()
+    {
+        var freq = AnsiConsole.Prompt(
+            new SelectionPrompt<string>()
+                .Title("Choisis une [green]fréquence[/] :")
+                .AddChoices("Journalière", "Hebdomadaire", "Mensuelle", "Annuelle")
+        );
+
+        _gestionnaire.AfficherTachesFiltrees(freq);
+    }
+
+    private void SaisieAttribuerTache()
+    {
+        var toutes = _gestionnaire.ObtenirToutesLesTaches();
+        if (!toutes.Any())
+        {
+            AnsiConsole.MarkupLine("[red]Aucune tâche disponible pour attribution.[/]");
+            return;
+        }
+
+        var tache = AnsiConsole.Prompt(
+            new SelectionPrompt<Tache>().Title("Choisis la [green]tâche[/] :").UseConverter(t => t.Titre).AddChoices(toutes)
+        );
+        var ouvrier = AnsiConsole.Prompt(
+            new SelectionPrompt<Ouvrier>().Title("Choisis l'[green]ouvrier[/] :").UseConverter(o => o.Prenom).AddChoices(_gestionnaire.Ouvriers)
+        );
+        var zone = AnsiConsole.Prompt(
+            new SelectionPrompt<ZoneTerrain>().Title("Choisis la [green]zone[/] :").UseConverter(z => z.Nom).AddChoices(_gestionnaire.Zones)
+        );
+        string heure = AnsiConsole.Ask<string>("À quelle [green]heure[/] ? (ex: 09:00) :");
+
+        // Utilisation de la logique métier de la classe ChefEquipe !
+        _chefParDefaut.AssignerTache(tache, ouvrier, zone, heure);
+        AnsiConsole.MarkupLine($"[green]✓ Tâche '{tache.Titre}' attribuée par {_chefParDefaut.Prenom} à {ouvrier.Prenom}.[/]");
+    }
+
+    private void SaisiePlanningOuvrier()
+    {
+        var ouvrier = AnsiConsole.Prompt(
+            new SelectionPrompt<Ouvrier>().Title("Sélectionnez un [green]ouvrier[/] :").UseConverter(o => o.Prenom).AddChoices(_gestionnaire.Ouvriers)
+        );
+
+        // Appel direct à la fonctionnalité de ChefEquipe pour générer le visuel du planning
+        _chefParDefaut.VoirPlanningJournee(_gestionnaire.ObtenirToutesLesTaches(), ouvrier);
     }
 }
