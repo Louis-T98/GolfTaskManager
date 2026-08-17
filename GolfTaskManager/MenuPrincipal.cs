@@ -26,11 +26,10 @@ public class MenuPrincipal
             AnsiConsole.Write(new Rule("[green bold]=== GolfTaskManager ===[/]") { Justification = Justify.Left });
             AnsiConsole.WriteLine();
 
-            // Menu interactif Spectre.Console avec flèches du clavier : aucun risque de mauvaise saisie
             var choix = AnsiConsole.Prompt(
                 new SelectionPrompt<string>()
                     .Title("Sélectionnez une action :")
-                    .PageSize(10)
+                    .PageSize(12)
                     .AddChoices(new[] {
                         "1. Ajouter une tâche",
                         "2. Afficher toutes les tâches",
@@ -43,33 +42,36 @@ public class MenuPrincipal
                         "9. Quitter"
                     }));
 
-            switch (choix)
+            // En isolant le numéro avant le point, on évite les conflits entre 1 et 11
+            string numeroOption = choix.Split('.')[0].Trim();
+
+            switch (numeroOption)
             {
-                case string s when s.StartsWith("1"):
+                case "1":
                     SaisieAjouterTache();
                     break;
-                case string s when s.StartsWith("2"):
+                case "2":
                     _gestionnaire.AfficherTaches();
                     break;
-                case string s when s.StartsWith("3"):
+                case "3":
                     SaisieMarquerTerminee();
                     break;
-                case string s when s.StartsWith("4"):
+                case "4":
                     SaisieSupprimerTache();
                     break;
-                case string s when s.StartsWith("5"):
+                case "5":
                     SaisieFiltrerFrequence();
                     break;
-                case string s when s.StartsWith("6"):
+                case "6":
                     SaisieAttribuerTache();
                     break;
-                case string s when s.StartsWith("7"):
+                case "7":
                     SaisiePlanningOuvrier();
                     break;
-                case string s when s.StartsWith("8"):
+                case "8":
                     _gestionnaire.AfficherTachesParFrequence();
                     break;
-                case string s when s.StartsWith("9"):
+                case "9":
                     quitter = true;
                     break;
             }
@@ -133,12 +135,12 @@ public class MenuPrincipal
         var tacheChoisie = AnsiConsole.Prompt(
             new SelectionPrompt<Tache>()
                 .Title("[red]Sélectionnez la tâche à supprimer :[/]")
-                .UseConverter(t => $"{t.Titre} [{t.Statut}]")
+                .UseConverter(t => $"{t.Titre} [{t.Statut}]".EscapeMarkup())
                 .AddChoices(toutes)
         );
 
         _gestionnaire.SupprimerTache(tacheChoisie);
-        AnsiConsole.MarkupLine($"[red]✓ La tâche '{tacheChoisie.Titre}' a été supprimée.[/]");
+        AnsiConsole.MarkupLine($"[red]✓ La tâche '{tacheChoisie.Titre.EscapeMarkup()}' a été supprimée.[/]");
     }
 
     private void SaisieFiltrerFrequence()
